@@ -1,0 +1,13 @@
+import {createHash} from 'node:crypto';
+import {readFileSync,readdirSync,writeFileSync} from 'node:fs';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+const dist=fileURLToPath(new URL('../dist/',import.meta.url));
+const urls=['/','/icon.svg','/icon-180.png','/icon-192.png','/icon-512.png','/manifest.webmanifest',...readdirSync(join(dist,'assets')).map(name=>'/assets/'+name)];
+const hash=createHash('sha256');
+for(const url of urls)hash.update(readFileSync(join(dist,url==='/'?'index.html':url.slice(1))));
+const version=hash.digest('hex').slice(0,12);
+const source=readFileSync(new URL('../public/sw.js',import.meta.url),'utf8');
+const compiled=source.replace("const SHELL='naryadai-shell-v1';",`const SHELL='naryadai-shell-${version}';`).replace("cache.addAll(['/','/icon.svg','/manifest.webmanifest'])",`cache.addAll(${JSON.stringify(urls)})`);
+writeFileSync(join(dist,'sw.js'),compiled);
+console.log(`PWA shell ${version}: ${urls.length} public assets; API responses are excluded.`);

@@ -1,0 +1,10 @@
+.env
+storage
+__pycache__
+.pytest_cache
+tests
+.local
+.local-*
+.pytest-tmp*
+*.db
+*.log
